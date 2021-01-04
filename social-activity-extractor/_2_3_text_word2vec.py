@@ -55,6 +55,7 @@ def get_latent(args):
 	row_list = []
 	csv_name = 'text_word2vec_' + args.target_dataset + '.csv'
 	pbar = tqdm(total=df_data.shape[0])
+
 	for index, row in df_data.iterrows():
 		pbar.update(1)
 		short_code = row.iloc[0]
@@ -68,8 +69,6 @@ def get_latent(args):
 		row_list.append(vector)
 		del text_data
 	pbar.close()
-
-
 
 	result_df = pd.DataFrame(data=row_list, index=short_code_list, columns=[i for i in range(300)])
 	result_df.index.name = "short_code"

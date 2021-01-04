@@ -32,10 +32,12 @@ from model.util import load_fullmultimodal_data
 
 CONFIG = config.Config
 
+
 def slacknoti(contentstr):
 	webhook_url = "https://hooks.slack.com/services/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"
 	payload = {"text": contentstr}
 	requests.post(webhook_url, data=json.dumps(payload), headers={'Content-Type': 'application/json'})
+
 
 def main():
 	parser = argparse.ArgumentParser(description='text convolution-deconvolution auto-encoder model')
@@ -75,7 +77,6 @@ def main():
 		slacknoti("underkoo end using")
 
 
-
 def get_latent(args):
 	device = torch.device(args.gpu)
 	print("Loading embedding model...")
@@ -103,7 +104,6 @@ def get_latent(args):
 	multimodal_encoder.load_state_dict(checkpoint['multimodal_encoder'])
 	multimodal_encoder.to(device)
 	multimodal_encoder.eval() 
-
 
 	csv_name = 'latent_' + args.target_dataset
 	if args.normalize:

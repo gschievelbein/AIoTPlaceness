@@ -34,6 +34,7 @@ from util import process_text
 CONFIG = config.Config
 # okt=Okt()
 
+
 def make_corpus(target_folder):
 	print(target_folder)
 	corpus_name = target_folder + '.txt'
@@ -96,8 +97,8 @@ def make_corpus(target_folder):
 # 		return ("", language.name)
 # 	return (input_line, language.code)
 
-def make_fasttext(target_dataset):
 
+def make_fasttext(target_dataset):
 	corpus_path = os.path.join(CONFIG.DATASET_PATH, target_dataset, "corpus.txt")
 	sentences = word2vec.LineSentence(corpus_path) 
 	dimension_size = 300
@@ -113,6 +114,7 @@ def make_fasttext(target_dataset):
 	embedding_model.wv.init_sims(replace=True)
 	embedding_model.wv.save(os.path.join(CONFIG.EMBEDDING_PATH, model_name))
 	print("embedding completed")
+
 
 def model_to_csv(target_model):
 	model_name = 'WORD2VEC_' + target_model + '.model'
@@ -133,6 +135,7 @@ def model_to_csv(target_model):
 	f_csv.close()
 	print("completed to write csv")
 
+
 def test_fasttext(target_model):
 	model_name = 'FASTTEXT_' + target_model + '.model'
 	model = FastTextKeyedVectors.load(os.path.join(CONFIG.EMBEDDING_PATH, model_name))
@@ -148,6 +151,7 @@ def test_fasttext(target_model):
 	print(model.similar_by_vector(vector=pad_vector, topn=5))
 	print(model.get_vector("<EOS>"))
 	print(model.get_vector("<PAD>"))
+
 
 def pickle_to_corpus(target_pickle):
 	pickle_name = target_pickle + '.p'
@@ -211,6 +215,7 @@ def pickle_to_corpus(target_pickle):
 			count = count + 1
 	f_wr.close()
 
+
 def make_word2vec(target_corpus):
 	corpus_path = os.path.join(CONFIG.DATASET_PATH, target_corpus, 'corpus.txt')
 	sentences = word2vec.LineSentence(corpus_path) 
@@ -220,7 +225,7 @@ def make_word2vec(target_corpus):
 	embedding_model = Word2Vec(size=embedding_size, window=5, min_count=CONFIG.MIN_WORD_COUNT, workers=4, sg = 1, hs=0, negative=5, sample = 0.00001, iter = 100)
 	embedding_model.build_vocab(sentences=sentences)
 	embedding_model.train(sentences=sentences, total_examples=embedding_model.corpus_count, epochs=20)
-	model_name = "WORD2VEC_"+ target_corpus + ".model"
+	model_name = "WORD2VEC_" + target_corpus + ".model"
 	embedding_model.wv.save(os.path.join(CONFIG.EMBEDDING_PATH, model_name))
 
 	vocab_list = list(embedding_model.wv.vocab)
@@ -247,6 +252,7 @@ def make_word2vec(target_corpus):
 	f.close()
 	print(word_array.shape)
 	print("embedding completed")
+
 
 def test():
 	model_name = 'DOC2VEC_instagram0830.model'
@@ -325,6 +331,7 @@ def make_doc2vec(target_posts):
 	embedding_model.save(os.path.join(CONFIG.EMBEDDING_PATH, model_name))
 	print("embedding completed")
 
+
 def make_tfidf(target_posts):
 	df_data = pd.read_csv(os.path.join(CONFIG.DATASET_PATH, target_posts, 'posts.csv'), index_col=0, header=None, encoding='utf-8-sig')
 	with open(os.path.join(CONFIG.DATASET_PATH, target_posts, 'word_idx.json'), "r", encoding='utf-8') as f:
@@ -356,7 +363,6 @@ def make_tfidf(target_posts):
 
 	with open(os.path.join(CONFIG.DATASET_PATH, target_posts, 'dictionary_list.p'), 'wb') as f:
 		cPickle.dump(dictionary_list, f)
-
 
 
 def run(option):

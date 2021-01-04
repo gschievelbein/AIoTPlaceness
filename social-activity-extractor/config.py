@@ -1,6 +1,8 @@
 # config.py
 import platform
 import os
+
+
 class Config:
 	
 	if platform.system() == 'Windows':

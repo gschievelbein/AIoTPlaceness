@@ -41,14 +41,15 @@ def main():
 
 	get_latent(args)
 
+
 def get_latent(args):
 	print("Loading embedding model...")
 	model_name = 'DOC2VEC_' + args.target_dataset + '.model'
 	embedding_model = Doc2Vec.load(os.path.join(CONFIG.EMBEDDING_PATH, model_name))
 	print("Loading embedding model completed")
 	
-	full_data = []
-	df_data = pd.read_csv(os.path.join(CONFIG.DATASET_PATH, args.target_dataset, 'posts.csv'), header=None, encoding='utf-8-sig')
+	df_data = pd.read_csv(os.path.join(CONFIG.DATASET_PATH, args.target_dataset, 'posts.csv'), header=None,
+						  encoding='utf-8-sig')
 
 	short_code_list = []
 	row_list = []
@@ -64,14 +65,11 @@ def get_latent(args):
 		del text_data
 	pbar.close()
 
-
-
 	result_df = pd.DataFrame(data=row_list, index=short_code_list, columns=[i for i in range(embedding_model.vector_size)])
 	result_df.index.name = "short_code"
 	result_df.sort_index(inplace=True)
 	result_df.to_csv(os.path.join(CONFIG.CSV_PATH, csv_name), encoding='utf-8-sig')
 	print("Finish!!!")
-
 
 
 if __name__ == '__main__':

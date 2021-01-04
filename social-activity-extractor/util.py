@@ -8,16 +8,17 @@ from nltk.tokenize import word_tokenize, sent_tokenize
 from nltk.tag import pos_tag
 from nltk.corpus import stopwords
 
-okt=Okt()
+okt = Okt()
 expression = re.compile('[ㄱ-ㅣ가-힣|a-zA-Z|\s]+')
 shortword = re.compile(r'\W*\b\w{1,2}\b')
 stop_words = set(stopwords.words('english'))
+
+
 def process_text(text_data):
 	text_data = ''.join(x for x in text_data if x.isprintable())
 	text_data = text_data.replace("#", " ")
 	text_data = text_data.replace("\n", " ")
 	languages = Detector(text_data, quiet=True).languages
-
 
 	word_list = []
 	if languages[0].code in ["ko"]:
@@ -44,6 +45,7 @@ def process_text(text_data):
 				word_list.append(word)		
 	return word_list
 
+
 def process_text_english(text_data):
 	#text_data = shortword.sub('', text_data)
 	text_data = ''.join(x for x in text_data if x.isprintable())
@@ -64,6 +66,7 @@ def process_text_english(text_data):
 			result.append(word)
 
 	return result
+
 
 def temp(text_data):
 	text_data = [re.findall(expression, x) for x in text_data if x.isprintable()]

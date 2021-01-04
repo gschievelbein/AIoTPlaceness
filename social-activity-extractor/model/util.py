@@ -25,6 +25,7 @@ from tqdm import tqdm
 
 torch.manual_seed(42)
 
+
 def load_multi_csv_data(df_image_data, df_text_data, df_weight, df_train, df_val, CONFIG):
     train_index = set(df_train.index)
     val_index = set(df_val.index)
@@ -59,6 +60,7 @@ def load_multi_csv_data(df_image_data, df_text_data, df_weight, df_train, df_val
     val_dataset = LabeledWeightedMultiCSVDataset(val_short_codes, np.array(val_image_data), np.array(val_text_data), val_label_data, np.array(val_weight_data, dtype=np.float32), CONFIG)
     return train_dataset, val_dataset
 
+
 class LabeledWeightedMultiCSVDataset(Dataset):
     def __init__(self, short_codes, image_data, text_data, label_data, weight_data, CONFIG):
         self.short_codes = short_codes
@@ -75,6 +77,7 @@ class LabeledWeightedMultiCSVDataset(Dataset):
         image_tensor = torch.from_numpy(self.image_data[idx]).type(torch.FloatTensor)
         text_tensor = torch.from_numpy(self.text_data[idx]).type(torch.FloatTensor)
         return self.short_codes[idx], image_tensor, text_tensor, self.label_data[idx], self.weight_data[idx]
+
 
 def load_semi_supervised_csv_data(df_image_data, df_text_data, df_train, df_val, CONFIG):
     train_index = set(df_train.index)

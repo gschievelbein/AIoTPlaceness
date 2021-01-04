@@ -564,6 +564,7 @@ def make_label_set(target_csv):
     #df_weight = df_weight.loc[df_category.index]
     df_weight.to_csv(os.path.join(CONFIG.CSV_PATH, "weight_label.csv"), encoding='utf-8-sig')
 
+
 def cut_label_csv(target_csv, label_csv):
     df_data = pd.read_csv(os.path.join(CONFIG.CSV_PATH, target_csv), index_col=0, encoding='utf-8')
     df_label = pd.read_csv(os.path.join(CONFIG.CSV_PATH, label_csv), index_col=0, encoding='utf-8')
@@ -571,6 +572,7 @@ def cut_label_csv(target_csv, label_csv):
     print(df_data[:5])
     print(df_label[:5])
     df_data.to_csv(os.path.join(CONFIG.CSV_PATH, 'labeled_' + target_csv), encoding='utf-8-sig')
+
 
 def make_scaled_csv(csv_path, target_csv):
     df_data = pd.read_csv(os.path.join(csv_path, target_csv), index_col=0, encoding='utf-8')
@@ -582,6 +584,7 @@ def make_scaled_csv(csv_path, target_csv):
     print(df_scaled_data[:5])
     df_scaled_data.to_csv(os.path.join(csv_path, 'scaled_' + target_csv), encoding='utf-8-sig')
 
+
 def sampled_plus_labeled_csv(target_csv, label_csv, n):
     df_data = pd.read_csv(os.path.join(CONFIG.CSV_PATH, target_csv), index_col=0, encoding='utf-8')
     df_label = pd.read_csv(os.path.join(CONFIG.CSV_PATH, label_csv), index_col=0, encoding='utf-8')
@@ -591,6 +594,7 @@ def sampled_plus_labeled_csv(target_csv, label_csv, n):
     df_data = pd.concat([df_data, df_label])
     df_data = df_data.sample(frac=1)
     df_data.to_csv(os.path.join(CONFIG.CSV_PATH, n + '_plus_labeled_' + target_csv), encoding='utf-8-sig')
+
 
 def kfold_cut_csv(label_csv):
     df_label = pd.read_csv(os.path.join(CONFIG.CSV_PATH, label_csv), index_col=0, encoding='utf-8')
@@ -609,6 +613,7 @@ def kfold_cut_csv(label_csv):
         df_train.to_csv(os.path.join(CONFIG.CSV_PATH, 'train_' + str(kf_count) + '_' + label_csv), encoding='utf-8-sig')
         df_test.to_csv(os.path.join(CONFIG.CSV_PATH, 'test_' + str(kf_count) + '_' + label_csv), encoding='utf-8-sig')
         kf_count = kf_count + 1
+
 
 def test2():
     df_label = pd.read_csv(os.path.join(CONFIG.CSV_PATH, 'real_label.csv'), index_col=0, encoding='utf-8')
@@ -654,7 +659,6 @@ def test2():
         mutual_list.append(predicted_label)
     print("mutual accuracy on total %.4f" % accuracy_score(np.array(mutual_list), np.array(df_label['category'])))
 
-
     df_label_tagged = df_label.loc[df_tagged.index]
     df_mdec_tagged = df_mdec.loc[df_tagged.index]
     df_ours_tagged = df_ours.loc[df_tagged.index]
@@ -670,6 +674,7 @@ def test2():
             if (df_mdec_tagged.loc[index][0] != df_label_tagged.loc[index][0]) and (tagging_category == 1):
                 print(index)
     print(result_matrix)
+
 
 def process_dataset_text_english(target_dataset):
     from util import process_text_english
@@ -737,6 +742,7 @@ def process_dataset_text_english(target_dataset):
     f_csv.close()
     f_corpus.close()
 
+
 def balanced_sampling(target_csv, n):
     df_data = pd.read_csv(os.path.join(CONFIG.CSV_PATH, target_csv), index_col=0, encoding='utf-8')
     print(df_data)
@@ -762,6 +768,7 @@ def balanced_sampling(target_csv, n):
     df_data = df_data.sample(frac=1)
     print(df_data)
     df_data.to_csv(os.path.join(CONFIG.CSV_PATH, n + '_' + target_csv), encoding='utf-8-sig')
+
 
 def kfold_sampling(label_csv, n):
     n = int(n)

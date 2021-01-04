@@ -193,5 +193,6 @@ def make_de(df_text_data, df_train, dictionary_list, n_clusters=12):
             dictionary_embedding[index] = np.argmax(value)
     return dictionary_embedding
 
+
 if __name__ == '__main__':
     main()

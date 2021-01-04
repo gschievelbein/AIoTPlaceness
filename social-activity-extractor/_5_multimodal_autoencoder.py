@@ -30,13 +30,14 @@ from model.util import load_multimodal_data
 from model.component import AdamW, cyclical_lr
 
 
-
 CONFIG = config.Config
+
 
 def slacknoti(contentstr):
 	webhook_url = "https://hooks.slack.com/services/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"
 	payload = {"text": contentstr}
 	requests.post(webhook_url, data=json.dumps(payload), headers={'Content-Type': 'application/json'})
+
 
 def main():
 	parser = argparse.ArgumentParser(description='text convolution-deconvolution auto-encoder model')
@@ -84,7 +85,6 @@ def main():
 		slacknoti("underkoo end using")
 
 
-
 def train_reconstruction(args):
 	device = torch.device(args.gpu)
 	print("Loading embedding model...")
@@ -124,7 +124,6 @@ def train_reconstruction(args):
 		imgseq_decoder_checkpoint = torch.load(os.path.join(CONFIG.CHECKPOINT_PATH, ("imgseq_autoencoder_" + str(args.decode_latent) + "_epoch_100.pt")), map_location=lambda storage, loc: storage)
 		imgseq_decoder.load_state_dict(imgseq_decoder_checkpoint['imgseq_decoder'])
 		del imgseq_decoder_checkpoint
-
 
 	multimodal_encoder = multimodal_model.MultimodalEncoder(text_encoder, imgseq_encoder, args.latent_size, args.normalize, args.add_latent)
 	multimodal_decoder = multimodal_model.MultimodalDecoder(text_decoder, imgseq_decoder, args.latent_size, CONFIG.MAX_SEQUENCE_LEN, args.no_decode)
@@ -227,6 +226,7 @@ def train_reconstruction(args):
 	finally:
 		exp.end()
 
+
 def eval_reconstruction_with_rouge(autoencoder, idx2word, text_criterion, imgseq_criterion, data_iter, device):
 	print("=================Eval======================")
 	autoencoder.eval()
@@ -266,6 +266,7 @@ def eval_reconstruction_with_rouge(autoencoder, idx2word, text_criterion, imgseq
 	autoencoder.train()
 
 	return avg_text_loss, avg_imgseq_loss, avg_loss, rouge_1, rouge_2
+
 
 def calc_rouge(original_sentences, predict_sentences):
 	rouge_1 = 0.0

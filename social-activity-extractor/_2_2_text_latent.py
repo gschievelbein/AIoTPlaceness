@@ -32,10 +32,12 @@ from model.util import load_text_data_with_short_code
 
 CONFIG = config.Config
 
+
 def slacknoti(contentstr):
 	webhook_url = "https://hooks.slack.com/services/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"
 	payload = {"text": contentstr}
 	requests.post(webhook_url, data=json.dumps(payload), headers={'Content-Type': 'application/json'})
+
 
 def main():
 	parser = argparse.ArgumentParser(description='text convolution-deconvolution auto-encoder model')
@@ -67,7 +69,6 @@ def main():
 		slacknoti("underkoo end using")
 
 
-
 def get_latent(args):
 	device = torch.device(args.gpu)
 	print("Loading embedding model...")
@@ -94,9 +95,7 @@ def get_latent(args):
 	text_encoder.to(device)
 	text_encoder.eval() 
 
-
 	csv_name = 'text_latent_' + args.target_dataset + '.csv'
-
 
 	short_code_list = []
 	row_list = []
@@ -116,7 +115,6 @@ def get_latent(args):
 	result_df.sort_index(inplace=True)
 	result_df.to_csv(os.path.join(CONFIG.CSV_PATH, csv_name), encoding='utf-8-sig')
 	print("Finish!!!")
-
 
 
 if __name__ == '__main__':
