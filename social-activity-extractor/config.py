@@ -21,3 +21,5 @@ class Config:
 	MAX_SEQUENCE_LEN = 10
 	SVG_PATH = os.path.join('/4TBSSD', 'SVG')
 	RESULT_PATH = './result'
+	DOWNLOADS_PATH = './download'
+

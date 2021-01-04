@@ -33,7 +33,7 @@ def embed_sentences(args):
     print("Loading sentence embedding model completed!")
 
     print("Loading dataframe...")
-    df_data = pd.read_csv(os.path.join(CONFIG.DATASET_PATH, args.target_dataset, args.target_csv), header=None,
+    df_data = pd.read_csv(os.path.join(CONFIG.DOWNLOADS_PATH, args.target_dataset, args.target_csv), header=None,
                           encoding='utf-8-sig')
     print("Loading dataframe completed!")
 
