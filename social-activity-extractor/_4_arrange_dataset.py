@@ -566,24 +566,36 @@ def make_label_set(target_csv):
 
 
 def cut_label_csv(target_csv, label_csv):
+    print("Loading data...")
     df_data = pd.read_csv(os.path.join(CONFIG.CSV_PATH, target_csv), index_col=0, encoding='utf-8')
     df_label = pd.read_csv(os.path.join(CONFIG.CSV_PATH, label_csv), index_col=0, encoding='utf-8')
+    print("Started cutting...")
     df_data = df_data.loc[df_label.index]
+    print("Cut dataset [:5]:")
     print(df_data[:5])
+    print("Labels [:5]:")
     print(df_label[:5])
+    print("Finished cutting!")
     df_data.to_csv(os.path.join(CONFIG.CSV_PATH, 'labeled_' + target_csv), encoding='utf-8-sig')
+    print("Dataframe saved to " + os.path.join(CONFIG.CSV_PATH, 'labeled_' + target_csv))
+    print("Finished :)")
 
 
 def make_scaled_csv(csv_path, target_csv):
+    print('Scaling values...')
     df_data = pd.read_csv(os.path.join(csv_path, target_csv), index_col=0, encoding='utf-8')
     df_data = df_data.sample(frac=1.0)
     scaled_data = StandardScaler().fit_transform(np.array(df_data.values))
     df_scaled_data = pd.DataFrame(data=scaled_data, index=df_data.index,
                                         columns=df_data.columns)
+    print('Original data [:5]')
     print(df_data[:5])
+    print('Original data [:5]')
     print(df_scaled_data[:5])
-    df_scaled_data.to_csv(os.path.join(csv_path, 'scaled_' + target_csv), encoding='utf-8-sig')
 
+    df_scaled_data.to_csv(os.path.join(csv_path, 'scaled_' + target_csv), encoding='utf-8-sig')
+    print('Saved file to ' + csv_path, '/scaled_' + target_csv)
+    print('[LOG] Finished :)')
 
 def sampled_plus_labeled_csv(target_csv, label_csv, n):
     df_data = pd.read_csv(os.path.join(CONFIG.CSV_PATH, target_csv), index_col=0, encoding='utf-8')
