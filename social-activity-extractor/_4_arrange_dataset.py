@@ -372,6 +372,7 @@ def make_toy_dataset(target_dataset):
 def process_resize_imgseq(target_dataset):
     img_transform = transforms.Compose([
         transforms.Resize(224),
+
         transforms.CenterCrop(224),
         transforms.ToTensor()
     ])
@@ -596,6 +597,27 @@ def make_scaled_csv(csv_path, target_csv):
     df_scaled_data.to_csv(os.path.join(csv_path, 'scaled_' + target_csv), encoding='utf-8-sig')
     print('Saved file to ' + csv_path, '/scaled_' + target_csv)
     print('[LOG] Finished :)')
+
+
+# Option 22
+def make_pca(csv_path, target_csv):
+    print('Loading dataframe...')
+    df_data = pd.read_csv(os.path.join(csv_path, target_csv), index_col=0, encoding='utf-8')
+    df_data = df_data.sample(frac=1.0)
+    pca = PCA(n_components=300, random_state=42)
+    print('Reshaping...')
+    df_pca = pd.DataFrame(pca.fit_transform(df_data))
+    df_pca.columns = ['PC' + str(i) for i in range(df_pca.shape[1])]
+    df_pca.index = df_data.index
+    print('Original [:5]: ')
+    print(df_data[:5])
+    print('PC [:5]: ')
+    print(df_pca[:5])
+    filename = os.path.join(csv_path, 'pca_' + target_csv)
+    df_pca.to_csv(filename, encoding='utf-8-sig')
+    print('Saved to ' + filename)
+    print('Finished :)')
+
 
 def sampled_plus_labeled_csv(target_csv, label_csv, n):
     df_data = pd.read_csv(os.path.join(CONFIG.CSV_PATH, target_csv), index_col=0, encoding='utf-8')
@@ -839,6 +861,8 @@ def run(option):
         balanced_sampling(target_csv=sys.argv[2], n=sys.argv[3])
     elif option == 21:
         kfold_sampling(label_csv=sys.argv[2], n=sys.argv[3])
+    elif option == 22:
+        make_pca(csv_path=sys.argv[2], target_csv=sys.argv[3])
     else:
         print("This option does not exist!\n")
 
