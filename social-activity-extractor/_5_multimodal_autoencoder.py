@@ -110,7 +110,7 @@ def train_reconstruction(args):
 	imgseq_encoder = imgseq_model.RNNEncoder(args.image_embedding_dim, args.num_layer, args.encode_latent, bidirectional=True)
 	text_decoder = text_model.DeconvolutionDecoder(text_embedding, args.tau, t3, args.filter_size, args.filter_shape, args.decode_latent, device)
 	imgseq_decoder = imgseq_model.RNNDecoder(CONFIG.MAX_SEQUENCE_LEN, args.image_embedding_dim, args.num_layer, args.decode_latent, bidirectional=True)
-	
+
 	if args.pretrained:
 		text_encoder_checkpoint = torch.load(os.path.join(CONFIG.CHECKPOINT_PATH, ("text_autoencoder_" + str(args.encode_latent) + "_epoch_100.pt")), map_location=lambda storage, loc: storage)
 		text_encoder.load_state_dict(text_encoder_checkpoint['text_encoder'])

@@ -149,6 +149,7 @@ def load_transductive_semi_supervised_csv_data(df_image_data, df_text_data, df_f
     train_dataset = LabeledMultiCSVDataset(train_short_codes, np.array(train_image_data), np.array(train_text_data), train_label_data, CONFIG)
     return full_dataset, train_dataset
 
+
 class MultiCSVDataset(Dataset):
     def __init__(self, short_codes, image_data, text_data, CONFIG):
         self.short_codes = short_codes
@@ -163,6 +164,7 @@ class MultiCSVDataset(Dataset):
         image_tensor = torch.from_numpy(self.image_data[idx]).type(torch.FloatTensor)
         text_tensor = torch.from_numpy(self.text_data[idx]).type(torch.FloatTensor)
         return self.short_codes[idx], image_tensor, text_tensor
+
 
 class LabeledMultiCSVDataset(Dataset):
     def __init__(self, short_codes, image_data, text_data, label_data, CONFIG):
@@ -179,6 +181,7 @@ class LabeledMultiCSVDataset(Dataset):
         text_tensor = torch.from_numpy(self.text_data[idx]).type(torch.FloatTensor)
         label_tensor = torch.LongTensor([self.label_data[idx]])
         return self.short_codes[idx], image_tensor, text_tensor, label_tensor
+
 
 def load_semi_supervised_uni_csv_data(df_input_data, df_train, df_val, CONFIG):
     train_index = set(df_train.index)
@@ -214,6 +217,7 @@ def load_semi_supervised_uni_csv_data(df_input_data, df_train, df_val, CONFIG):
     val_dataset = LabeledUniCSVDataset(val_short_codes, np.array(val_input_data), val_label_data, CONFIG)
     return full_dataset, train_dataset, val_dataset
 
+
 class UniCSVDataset(Dataset):
     def __init__(self, short_codes, input_data, CONFIG):
         self.short_codes = short_codes
@@ -226,6 +230,7 @@ class UniCSVDataset(Dataset):
     def __getitem__(self, idx):
         input_tensor = torch.from_numpy(self.input_data[idx]).type(torch.FloatTensor)
         return self.short_codes[idx], input_tensor
+
 
 class LabeledUniCSVDataset(Dataset):
     def __init__(self, short_codes, input_data, label_data, CONFIG):
@@ -378,6 +383,7 @@ def load_autoencoder_data(df_input_data, CONFIG):
     val_dataset = CSVDataset(val_short_codes, np.array(val_data), CONFIG)
     return train_dataset, val_dataset
 
+
 def load_csv_data(args, CONFIG):
     df_data = pd.read_csv(os.path.join(CONFIG.CSV_PATH, args.target_csv), index_col=0,
                           encoding='utf-8-sig')
@@ -402,6 +408,7 @@ def load_csv_data(args, CONFIG):
     pbar.close()
     val_dataset = CSVDataset(val_short_codes, np.array(val_data), CONFIG)
     return train_dataset, val_dataset
+
 
 class CSVDataset(Dataset):
     def __init__(self, short_codes, data, CONFIG):

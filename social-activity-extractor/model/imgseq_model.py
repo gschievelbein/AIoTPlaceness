@@ -11,6 +11,7 @@ from model.component import SiLU, Maxout, PTanh
 
 class ConvolutionEncoder(nn.Module):
 	def __init__(self, embedding_dim, t3, filter_size, filter_shape, latent_size):
+
 		super(ConvolutionEncoder, self).__init__()
 		self.convs1 = nn.Sequential(
 				nn.Conv2d(1, filter_size, (filter_shape, embedding_dim), stride=(1,1)),
@@ -48,6 +49,7 @@ class ConvolutionEncoder(nn.Module):
 		h2 = self.convs2(h1)
 		h = self.convs3(h2).squeeze().squeeze()
 		return h
+
 
 class DeconvolutionDecoder(nn.Module):
 	def __init__(self, embedding_dim, t3, filter_size, filter_shape, latent_size):

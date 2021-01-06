@@ -35,6 +35,7 @@ def adjust_learning_rate(lr, optimizer):
     for param_group in optimizer.param_groups:
         param_group["lr"] = lr
 
+
 class MDEC_encoder(nn.Module):
     def __init__(self, input_dim=784, z_dim=10, n_clusters=10,
                  encodeLayer=[400], activation="relu", dropout=0):
@@ -63,6 +64,7 @@ class MDEC_encoder(nn.Module):
         h = self.encoder(x)
         z = self._enc_mu(h)
         return z
+
 
 class PCalculator(nn.Module):
     def __init__(self, n_clusters):
@@ -130,6 +132,7 @@ class PCalculator(nn.Module):
 #         return output1
 #         # prob = self.softmax(output1)
 #         # return prob
+
 
 class MultiDEC(nn.Module):
     def __init__(self, device, image_encoder, text_encoder, ours=False, use_prior=False, n_clusters=10, alpha=1):
@@ -1321,7 +1324,6 @@ class MultiDEC(nn.Module):
                     optimizer.step()
 
                     del image_batch, text_batch, image_inputs, text_inputs, _image_z, _text_z
-
 
                 # update p considering short memory
                 q = []
