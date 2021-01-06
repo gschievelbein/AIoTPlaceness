@@ -466,17 +466,27 @@ def normalized_csv(csv_path, target_csv):
     df_normalized.to_csv(os.path.join(csv_path, 'normalized_' + target_csv), encoding='utf-8-sig')
 
 
+# Option 11
 def normalized_and_pca(csv_path, target_csv):
+    print('Reading file...')
     df_data = pd.read_csv(os.path.join(csv_path, target_csv), index_col=0, encoding='utf-8')
     df_data = df_data.sample(frac=1.0)
-    print(df_data[:5])
+    print('Normalizing...')
     df_normalized = df_data.div((np.sqrt(np.sum(np.square(df_data), axis=1))), axis=0)
+    print('Reshaping...')
     pca_normalized = PCA(n_components=300, random_state=42)
     df_pca_normalized = pd.DataFrame(pca_normalized.fit_transform(df_normalized))
     df_pca_normalized.columns = ['PC' + str(i) for i in range(df_pca_normalized.shape[1])]
     df_pca_normalized.index = df_normalized.index
+    print('Original [:5]:')
+    print(df_data[:5])
+    print('Reshaped normalized [:5]:')
     print(df_pca_normalized[:5])
-    df_pca_normalized.to_csv(os.path.join(csv_path, 'pca_normalized_' + target_csv), encoding='utf-8-sig')
+    print('Saving to file...')
+    filename = os.path.join(csv_path, 'pca_normalized_' + target_csv)
+    df_pca_normalized.to_csv(filename, encoding='utf-8-sig')
+    print('Saved to ' + filename)
+    print('Finished :)')
 
 
 def make_toy_csv(target_csv):
@@ -566,10 +576,11 @@ def make_label_set(target_csv):
     df_weight.to_csv(os.path.join(CONFIG.CSV_PATH, "weight_label.csv"), encoding='utf-8-sig')
 
 
-def cut_label_csv(target_csv, label_csv):
+# Option 14
+def cut_label_csv(target_path, target_csv, label_path, label_csv):
     print("Loading data...")
-    df_data = pd.read_csv(os.path.join(CONFIG.CSV_PATH, target_csv), index_col=0, encoding='utf-8')
-    df_label = pd.read_csv(os.path.join(CONFIG.CSV_PATH, label_csv), index_col=0, encoding='utf-8')
+    df_data = pd.read_csv(os.path.join(target_path, target_csv), index_col=0, encoding='utf-8')
+    df_label = pd.read_csv(os.path.join(label_path, label_csv), index_col=0, encoding='utf-8')
     print("Started cutting...")
     df_data = df_data.loc[df_label.index]
     print("Cut dataset [:5]:")
@@ -577,26 +588,51 @@ def cut_label_csv(target_csv, label_csv):
     print("Labels [:5]:")
     print(df_label[:5])
     print("Finished cutting!")
-    df_data.to_csv(os.path.join(CONFIG.CSV_PATH, 'labeled_' + target_csv), encoding='utf-8-sig')
-    print("Dataframe saved to " + os.path.join(CONFIG.CSV_PATH, 'labeled_' + target_csv))
+    print("Saving file...")
+    df_data.to_csv(os.path.join(target_path, 'labeled_' + target_csv), encoding='utf-8-sig')
+    print("Dataframe saved to " + os.path.join(target_path, 'labeled_' + target_csv))
     print("Finished :)")
 
 
+# Option 23
+# Creates sample equivalent to pre sampled csv file
+def cut_samples_csv(sampled_path, sampled_prefix, sampled_csv, target_path, target_csv):
+    print("Loading sample indexes...")
+    df_samples = pd.read_csv(os.path.join(sampled_path, sampled_prefix + '_' + sampled_csv),
+                             index_col=0, encoding='utf-8')
+    indexes = df_samples.index.values.tolist()
+    del df_samples
+    print("Loading target csv...")
+    df_data = pd.read_csv(os.path.join(target_path, target_csv), index_col=0, encoding='utf-8')
+    print("Cutting...")
+    df_data = df_data[df_data.index.isin(indexes)]
+    print("Cut dataset [:5]:")
+    print(df_data[:5])
+    print("Final size: " + str(df_data.shape[0]))
+    print('Saving file...')
+    filename = os.path.join(target_path, sampled_prefix + '_' + target_csv)
+    df_data.to_csv(filename, encoding='utf-8-sig')
+    print('Saved file to ' + filename)
+    print("Finished :)")
+
+
+# Option 15
 def make_scaled_csv(csv_path, target_csv):
-    print('Scaling values...')
+    print('Loading data...')
     df_data = pd.read_csv(os.path.join(csv_path, target_csv), index_col=0, encoding='utf-8')
     df_data = df_data.sample(frac=1.0)
+    print('Scaling values...')
     scaled_data = StandardScaler().fit_transform(np.array(df_data.values))
     df_scaled_data = pd.DataFrame(data=scaled_data, index=df_data.index,
                                         columns=df_data.columns)
-    print('Original data [:5]')
+    print('Original data [:5]:')
     print(df_data[:5])
-    print('Original data [:5]')
+    print('Original data [:5]:')
     print(df_scaled_data[:5])
-
+    print('Saving file...')
     df_scaled_data.to_csv(os.path.join(csv_path, 'scaled_' + target_csv), encoding='utf-8-sig')
     print('Saved file to ' + csv_path, '/scaled_' + target_csv)
-    print('[LOG] Finished :)')
+    print('Finished :)')
 
 
 # Option 22
@@ -613,6 +649,7 @@ def make_pca(csv_path, target_csv):
     print(df_data[:5])
     print('PC [:5]: ')
     print(df_pca[:5])
+    print('Saving file...')
     filename = os.path.join(csv_path, 'pca_' + target_csv)
     df_pca.to_csv(filename, encoding='utf-8-sig')
     print('Saved to ' + filename)
@@ -846,7 +883,7 @@ def run(option):
     elif option == 13:
         make_label_set(target_csv=sys.argv[2])
     elif option == 14:
-        cut_label_csv(target_csv=sys.argv[2], label_csv=sys.argv[3])
+        cut_label_csv(target_path=sys.argv[2], target_csv=sys.argv[3], label_path=sys.argv[4], label_csv=sys.argv[5])
     elif option == 15:
         make_scaled_csv(csv_path=sys.argv[2], target_csv=sys.argv[3])
     elif option == 16:
@@ -863,6 +900,9 @@ def run(option):
         kfold_sampling(label_csv=sys.argv[2], n=sys.argv[3])
     elif option == 22:
         make_pca(csv_path=sys.argv[2], target_csv=sys.argv[3])
+    elif option == 23:
+        cut_samples_csv(sampled_path=sys.argv[2], sampled_prefix=sys.argv[3], sampled_csv=sys.argv[4],
+                        target_path=sys.argv[5], target_csv=sys.argv[6])
     else:
         print("This option does not exist!\n")
 
