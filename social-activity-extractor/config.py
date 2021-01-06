@@ -13,13 +13,12 @@ class Config:
 	TARGET_PATH = os.path.join(root_dir, 'placeness')
 	DATA_PATH = os.path.join(root_dir, 'processed')
 	DATASET_PATH = os.path.join('./data', 'dataset')
-	CHECKPOINT_PATH = os.path.join('/4TBSSD', 'OLD_CHECKPOINT')
+	CHECKPOINT_PATH = os.path.join('./checkpoints')
 	EMBEDDING_PATH = './embedding'
 	CSV_PATH = './csv'
 	MAX_SENTENCE_LEN = 257
 	MIN_WORD_COUNT = 5
 	MAX_SEQUENCE_LEN = 10
-	SVG_PATH = os.path.join('/4TBSSD', 'SVG')
+	SVG_PATH = os.path.join('./svg')
 	RESULT_PATH = './result'
 	DOWNLOADS_PATH = './download'
-
