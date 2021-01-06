@@ -91,7 +91,7 @@ def train_reconstruction(args):
 
 def train_reconstruction_all(args):
     device = torch.device(args.gpu)
-    df_input_data = pd.read_csv(os.path.join(args.target_path, args.prefix + "_" + args.target_csv), index_col=0,
+    df_input_data = pd.read_csv(os.path.join(args.target_path, args.target_csv), index_col=0,
                                 encoding='utf-8-sig')
 
     for arg, value in vars(args).items():
@@ -109,14 +109,16 @@ def train_reconstruction_all(args):
                       dropout=args.dropout, device=device)
     if args.resume:
         print("resume from checkpoint")
-        sdae.load_model(os.path.join(CONFIG.CHECKPOINT_PATH, args.prefix + "_" + args.target_modal + "_" +
-                                     args.target_dataset + "_" + "_sdae_" + str(args.latent_dim) + "_all.pt"))
+        sdae.load_model(os.path.join(CONFIG.CHECKPOINT_PATH, args.target_modal + "_" +
+                                     args.target_dataset + "_" + str(args.input_dim) + "_sdae_" + str(args.latent_dim)
+                                     + "_all.pt"))
     else:
         sdae.pretrain(train_loader, val_loader, lr=args.lr, batch_size=args.batch_size,
                       num_epochs=args.pretrain_epochs, corrupt=0.2, loss_type="mse")
     sdae.fit(train_loader, val_loader, lr=args.lr, num_epochs=args.epochs, corrupt=0.2, loss_type="mse",
-             save_path=os.path.join(CONFIG.CHECKPOINT_PATH, args.prefix + "_" + args.target_modal + "_" +
-                                    args.target_dataset + "_" + "_sdae_" + str(args.latent_dim) + "_all.pt"))
+             save_path=os.path.join(CONFIG.CHECKPOINT_PATH, args.target_modal + "_" +
+                                    args.target_dataset + "_" + str(args.input_dim) +"_sdae_" + str(args.latent_dim)
+                                    + "_all.pt"))
 
 
 if __name__ == '__main__':

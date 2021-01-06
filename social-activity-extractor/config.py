@@ -16,6 +16,8 @@ class Config:
 	CHECKPOINT_PATH = os.path.join('./checkpoints')
 	EMBEDDING_PATH = './embedding'
 	CSV_PATH = './csv'
+	TEXT_EMBEDDINGS = os.path.join(CSV_PATH, 'text')
+	IMAGE_EMBEDDINGS = os.path.join(CSV_PATH, 'image')
 	MAX_SENTENCE_LEN = 257
 	MIN_WORD_COUNT = 5
 	MAX_SEQUENCE_LEN = 10
