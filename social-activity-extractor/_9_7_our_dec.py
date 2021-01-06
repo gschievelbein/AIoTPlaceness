@@ -111,7 +111,6 @@ def train_multidec(args):
                                                                                      df_test, CONFIG)
             print("\nLoading dataset completed")
 
-
             image_encoder = MDEC_encoder(input_dim=args.input_dim, z_dim=args.latent_dim, n_clusters=n_clusters,
                                          encodeLayer=[500, 500, 2000], activation="relu", dropout=0)
             image_encoder.load_model(os.path.join(CONFIG.CHECKPOINT_PATH, args.prefix_model + "_image" "_" + args.target_dataset +  "_sdae_" + str(args.latent_dim) + '_'  + str(fold_idx)) + ".pt")

@@ -14,6 +14,7 @@ import math
 from model.util import Dataset, masking_noise
 from model.ops import MSELoss, BCELoss
 
+
 def adjust_learning_rate(init_lr, optimizer, epoch):
     lr = init_lr * (0.1 ** (epoch//100))
     toprint = True
@@ -23,6 +24,7 @@ def adjust_learning_rate(init_lr, optimizer, epoch):
             if toprint:
                 print("Switching to learning rate %f" % lr)
                 toprint = False
+
 
 class DenoisingAutoencoder(nn.Module):
     def __init__(self, device, in_features, out_features, activation="relu",

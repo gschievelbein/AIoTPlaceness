@@ -74,7 +74,6 @@ def train_multidec(args):
     label_array = np.array(df_label['category'])
     n_classes = np.max(label_array) + 1
 
-
     exp = Experiment("multi_classifier", capture_io=True)
     for arg, value in vars(args).items():
         exp.param(arg, value)
@@ -154,6 +153,7 @@ def train_multidec(args):
 
     finally:
         exp.end()
+
 
 if __name__ == '__main__':
     main()

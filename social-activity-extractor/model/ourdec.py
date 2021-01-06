@@ -31,9 +31,11 @@ def buildNetwork(layers, activation="relu", dropout=0):
             net.append(nn.Dropout(dropout))
     return nn.Sequential(*net)
 
+
 def adjust_learning_rate(lr, optimizer):
     for param_group in optimizer.param_groups:
         param_group["lr"] = lr
+
 
 class MDEC_encoder(nn.Module):
     def __init__(self, input_dim=784, z_dim=10, n_clusters=10,
