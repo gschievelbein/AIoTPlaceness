@@ -32,6 +32,7 @@ def main():
     parser.add_argument('-prefix', type=str, default=None, help='prefix of target csv files (e.g. 10000_plus)')
     parser.add_argument('-target_dataset', type=str, default=None, help='name of dataset of train and test files in /csv')
     parser.add_argument('-target_modal', type=str, default=None, help='type of target file (used for naming chekpoints. e.g.: image')
+    parser.add_argument('-save_path', type=str, default=CONFIG.CHECKPOINT_PATH, help='name of the directory to save the checkpoints')
     parser.add_argument('-shuffle', default=True, help='shuffle data every epoch')
     # model
     parser.add_argument('-input_dim', type=int, default=300, help='size of input dimension')
@@ -77,14 +78,14 @@ def train_reconstruction(args):
                           dropout=args.dropout, device=device)
         if args.resume:
             print("resume from checkpoint")
-            sdae.load_model(os.path.join(CONFIG.CHECKPOINT_PATH, args.prefix + "_" + args.target_modal + "_" +
+            sdae.load_model(os.path.join(args.save_path, args.prefix + "_" + args.target_modal + "_" +
                                          args.target_dataset + "_" + str(args.input_dim) + "_sdae_" +
                                          str(args.latent_dim) + '_' + str(fold_idx)) + ".pt")
         else:
             sdae.pretrain(train_loader, val_loader, lr=args.lr, batch_size=args.batch_size,
                           num_epochs=args.pretrain_epochs, corrupt=0.2, loss_type="mse")
         sdae.fit(train_loader, val_loader, lr=args.lr, num_epochs=args.epochs, corrupt=0.2, loss_type="mse",
-                 save_path=os.path.join(CONFIG.CHECKPOINT_PATH, args.prefix + "_" + args.target_modal + "_" +
+                 save_path=os.path.join(args.save_path, args.prefix + "_" + args.target_modal + "_" +
                                         args.target_dataset + "_" + str(args.input_dim) + "_sdae_" +
                                         str(args.latent_dim) + '_' + str(fold_idx)) + ".pt")
 
@@ -109,14 +110,14 @@ def train_reconstruction_all(args):
                       dropout=args.dropout, device=device)
     if args.resume:
         print("resume from checkpoint")
-        sdae.load_model(os.path.join(CONFIG.CHECKPOINT_PATH, args.target_modal + "_" +
+        sdae.load_model(os.path.join(args.save_path, args.target_modal + "_" +
                                      args.target_dataset + "_" + str(args.input_dim) + "_sdae_" + str(args.latent_dim)
                                      + "_all.pt"))
     else:
         sdae.pretrain(train_loader, val_loader, lr=args.lr, batch_size=args.batch_size,
                       num_epochs=args.pretrain_epochs, corrupt=0.2, loss_type="mse")
     sdae.fit(train_loader, val_loader, lr=args.lr, num_epochs=args.epochs, corrupt=0.2, loss_type="mse",
-             save_path=os.path.join(CONFIG.CHECKPOINT_PATH, args.target_modal + "_" +
+             save_path=os.path.join(args.save_path, args.target_modal + "_" +
                                     args.target_dataset + "_" + str(args.input_dim) +"_sdae_" + str(args.latent_dim)
                                     + "_all.pt"))
 
