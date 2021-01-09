@@ -22,12 +22,6 @@ from model.multidec import MDEC_encoder, MultiDEC
 CONFIG = config.Config
 
 
-def slacknoti(contentstr):
-    webhook_url = "https://hooks.slack.com/services/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"
-    payload = {"text": contentstr}
-    requests.post(webhook_url, data=json.dumps(payload), headers={'Content-Type': 'application/json'})
-
-
 def main():
     parser = argparse.ArgumentParser(description='text convolution-deconvolution auto-encoder model')
     # learning
@@ -45,7 +39,7 @@ def main():
     parser.add_argument('-n_clusters', type=int, default=12, help='num of class')
     parser.add_argument('-image_csv', type=str, default='pca_normalized_image_encoded_seoul_subway.csv', help='file name of target csv')
     parser.add_argument('-text_csv', type=str, default='text_doc2vec_seoul_subway.csv', help='file name of target csv')
-    parser.add_argument('-label_csv', type=str, default='category_label.csv', help='file name of target label')
+    parser.add_argument('-label_csv', type=str, default='category_label.csv', help='file name of target labels')
     parser.add_argument('-sampled_n', type=int, default=None, help='number of fold')
     # model
     parser.add_argument('-prefix_model', type=str, default=None, help='prefix of csv name')
@@ -59,7 +53,6 @@ def main():
     parser.add_argument('-trans', action='store_true', default=False, help='transductive learning')
     parser.add_argument('-trans_csv', type=str, default='0.02_category_label.csv', help='file name of target transductive label')
     parser.add_argument('-ssldec', action='store_true', default=False, help='use if ssldec')
-    parser.add_argument('-noti', action='store_true', default=False, help='whether using gpu server')
     parser.add_argument('-tsne', action='store_true', default=False, help='whether to print tsne result')
     parser.add_argument('-gpu', type=str, default='cuda', help='gpu number')
     # option
@@ -67,81 +60,69 @@ def main():
 
     args = parser.parse_args()
 
-    if args.noti:
-        slacknoti("underkoo start using")
     if args.trans:
         train_multidec_transductive(args)
     else:
         train_multidec(args)
-    if args.noti:
-        slacknoti("underkoo end using")
 
 
 def train_multidec(args):
     print("Training multidec")
     device = torch.device(args.gpu)
-    df_image_data = pd.read_csv(os.path.join(CONFIG.CSV_PATH, args.prefix_csv + "_pca_normalized_image_encoded_" + args.target_dataset + ".csv"), index_col=0,
+    df_image_data = pd.read_csv(os.path.join(CONFIG.IMAGE_EMBEDDINGS, args.prefix_csv + '_' + image_csv + '_' + args.target_dataset + ".csv"), index_col=0,
                                 encoding='utf-8-sig')
-    df_text_data = pd.read_csv(os.path.join(CONFIG.CSV_PATH, args.prefix_csv + "_text_doc2vec_" + args.target_dataset + ".csv"), index_col=0,
+    df_text_data = pd.read_csv(os.path.join(CONFIG.TEXT_EMBEDDINGS, args.prefix_csv + '_' + args.text_csv + '_' + args.target_dataset + ".csv"), index_col=0,
                                encoding='utf-8-sig')
 
-    df_label = pd.read_csv(os.path.join(CONFIG.CSV_PATH, args.label_csv), index_col=0, encoding='utf-8-sig')
+    df_label = pd.read_csv(os.path.join(CONFIG.DATASET_PATH,args.target_dataset, args.label_csv), index_col=0, encoding='utf-8-sig')
     label_array = np.array(df_label['category'])
     n_clusters = np.max(label_array) + 1
     #n_clusters = args.n_clusters
 
-    exp = Experiment(args.prefix_csv + "_MDEC", capture_io=True)
+    acc_list = []
+    nmi_list = []
+    f_1_list = []
+    kf_count = 0
+    for fold_idx in range(args.start_fold, args.fold):
+        print("Current fold: ", fold_idx)
+        df_train = pd.read_csv(os.path.join(CONFIG.CSV_PATH, "train_" + str(fold_idx) + "_" + args.target_dataset + "_label.csv"),
+                              index_col=0,
+                              encoding='utf-8-sig')
+        if args.sampled_n is not None:
+            df_train = df_train.sample(n=args.sampled_n, random_state=42)
+        df_test = pd.read_csv(os.path.join(CONFIG.CSV_PATH, "test_" + str(fold_idx) + "_" + args.target_dataset + "_label.csv"),
+                              index_col=0,
+                              encoding='utf-8-sig')
+        print("Loading dataset...")
+        full_dataset, train_dataset, val_dataset = load_semi_supervised_csv_data(df_image_data, df_text_data, df_train,
+                                                                                 df_test, CONFIG)
+        print("\nLoading dataset completed")
 
-    for arg, value in vars(args).items():
-        exp.param(arg, value)
-    try:
-        acc_list = []
-        nmi_list = []
-        f_1_list = []
-        kf_count = 0
-        for fold_idx in range(args.start_fold, args.fold):
-            print("Current fold: ", fold_idx)
-            df_train = pd.read_csv(os.path.join(CONFIG.CSV_PATH, "train_" + str(fold_idx) + "_" + args.target_dataset + "_label.csv"),
-                                  index_col=0,
-                                  encoding='utf-8-sig')
-            if args.sampled_n is not None:
-                df_train = df_train.sample(n=args.sampled_n, random_state=42)
-            df_test = pd.read_csv(os.path.join(CONFIG.CSV_PATH, "test_" + str(fold_idx) + "_" + args.target_dataset + "_label.csv"),
-                                  index_col=0,
-                                  encoding='utf-8-sig')
-            print("Loading dataset...")
-            full_dataset, train_dataset, val_dataset = load_semi_supervised_csv_data(df_image_data, df_text_data, df_train,
-                                                                                     df_test, CONFIG)
-            print("\nLoading dataset completed")
+        image_encoder = MDEC_encoder(input_dim=args.input_dim, z_dim=args.latent_dim, n_clusters=n_clusters,
+                                     encodeLayer=[500, 500, 2000], activation="relu", dropout=0)
+        image_encoder.load_model(os.path.join(CONFIG.CHECKPOINT_PATH, 'images',  args.prefix_model + "_image_" + args.target_dataset +  "_sdae_" + str(args.latent_dim) + '_' + str(fold_idx)) + ".pt")
+        # image_encoder.load_model(os.path.join(CONFIG.CHECKPOINT_PATH, "sampled_plus_labeled_scaled_image_sdae_" + str(fold_idx)) + ".pt")
+        text_encoder = MDEC_encoder(input_dim=args.input_dim, z_dim=args.latent_dim, n_clusters=n_clusters,
+                                    encodeLayer=[500, 500, 2000], activation="relu", dropout=0)
+        text_encoder.load_model(os.path.join(CONFIG.CHECKPOINT_PATH, text, args.prefix_model + "_use_" + args.target_dataset + '_' + str(args.input_dim) + "_sdae_" + str(args.latent_dim) + '_' + str(fold_idx)) + ".pt")
+        # text_encoder.load_model(os.path.join(CONFIG.CHECKPOINT_PATH, "sampled_plus_labeled_scaled_text_sdae_" + str(fold_idx)) + ".pt")
+        mdec = MultiDEC(device=device, image_encoder=image_encoder, text_encoder=text_encoder, ours=args.ours, use_prior=args.use_prior,
+                            n_clusters=n_clusters)
 
+        if args.ssldec:
+            mdec.fit_predict_ssldec(full_dataset, train_dataset, val_dataset, args, CONFIG, lr=args.lr, batch_size=args.batch_size, num_epochs=args.epochs,
+                     save_path=os.path.join(CONFIG.CHECKPOINT_PATH, args.prefix_csv + "_mdec_" + str(args.latent_dim) + '_' + str(fold_idx)) + ".pt", tol=args.tol, kappa=args.kappa)
+        else:
+            mdec.fit_predict(full_dataset, train_dataset, val_dataset, args, CONFIG, lr=args.lr, batch_size=args.batch_size, num_epochs=args.epochs,
+                     save_path=os.path.join(CONFIG.CHECKPOINT_PATH, 'mdec', args.prefix_csv + "_mdec_" + str(args.input_dim) + '_' + str(args.latent_dim) + '_' + str(fold_idx)) + ".pt", tol=args.tol, kappa=args.kappa)
 
-            image_encoder = MDEC_encoder(input_dim=args.input_dim, z_dim=args.latent_dim, n_clusters=n_clusters,
-                                         encodeLayer=[500, 500, 2000], activation="relu", dropout=0)
-            image_encoder.load_model(os.path.join(CONFIG.CHECKPOINT_PATH, args.prefix_model + "_image" "_" + args.target_dataset +  "_sdae_" + str(args.latent_dim) + '_'  + str(fold_idx)) + ".pt")
-            # image_encoder.load_model(os.path.join(CONFIG.CHECKPOINT_PATH, "sampled_plus_labeled_scaled_image_sdae_" + str(fold_idx)) + ".pt")
-            text_encoder = MDEC_encoder(input_dim=args.input_dim, z_dim=args.latent_dim, n_clusters=n_clusters,
-                                        encodeLayer=[500, 500, 2000], activation="relu", dropout=0)
-            text_encoder.load_model(os.path.join(CONFIG.CHECKPOINT_PATH, args.prefix_model + "_text""_" + args.target_dataset + "_sdae_" + str(args.latent_dim) + '_'  + str(fold_idx)) + ".pt")
-            # text_encoder.load_model(os.path.join(CONFIG.CHECKPOINT_PATH, "sampled_plus_labeled_scaled_text_sdae_" + str(fold_idx)) + ".pt")
-            mdec = MultiDEC(device=device, image_encoder=image_encoder, text_encoder=text_encoder, ours=args.ours, use_prior=args.use_prior,
-                                n_clusters=n_clusters)
-
-            if args.ssldec:
-                mdec.fit_predict_ssldec(full_dataset, train_dataset, val_dataset, args, CONFIG, lr=args.lr, batch_size=args.batch_size, num_epochs=args.epochs,
-                         save_path=os.path.join(CONFIG.CHECKPOINT_PATH, args.prefix_csv + "_mdec_" + str(args.latent_dim) + '_'  + str(fold_idx)) + ".pt", tol=args.tol, kappa=args.kappa)
-            else:
-                mdec.fit_predict(full_dataset, train_dataset, val_dataset, args, CONFIG, lr=args.lr, batch_size=args.batch_size, num_epochs=args.epochs,
-                         save_path=os.path.join(CONFIG.CHECKPOINT_PATH, args.prefix_csv + "_mdec_" + str(args.latent_dim) + '_'  + str(fold_idx)) + ".pt", tol=args.tol, kappa=args.kappa)
-
-            acc_list.append(mdec.acc)
-            nmi_list.append(mdec.nmi)
-            f_1_list.append(mdec.f_1)
-            kf_count = kf_count + 1
+        acc_list.append(mdec.acc)
+        nmi_list.append(mdec.nmi)
+        f_1_list.append(mdec.f_1)
+        kf_count = kf_count + 1
         print("#Average acc: %.4f, Average nmi: %.4f, Average f_1: %.4f" % (
-            np.mean(acc_list), np.mean(nmi_list), np.mean(f_1_list)))
+        np.mean(acc_list), np.mean(nmi_list), np.mean(f_1_list)))
 
-    finally:
-        exp.end()
 
 def train_multidec_transductive(args):
     print("Training multidec")
@@ -191,6 +172,7 @@ def train_multidec_transductive(args):
 
     finally:
         exp.end()
+
 
 def eval_multidec(args):
     print("Evaluate multidec")

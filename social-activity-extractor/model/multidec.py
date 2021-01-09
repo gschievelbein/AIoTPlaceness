@@ -768,7 +768,6 @@ class MultiDEC(nn.Module):
 
                 del image_batch, text_batch, image_inputs, text_inputs, _image_z, _text_z
 
-
             self.eval()
             test_unsupervised_image_loss = 0.0
             test_unsupervised_text_loss = 0.0
