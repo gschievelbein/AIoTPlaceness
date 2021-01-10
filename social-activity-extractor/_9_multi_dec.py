@@ -43,7 +43,8 @@ def main():
     parser.add_argument('-sampled_n', type=int, default=None, help='number of fold')
     # model
     parser.add_argument('-prefix_model', type=str, default=None, help='prefix of csv name')
-    parser.add_argument('-input_dim', type=int, default=300, help='size of input dimension')
+    parser.add_argument('-img_dim', type=int, default=300, help='size of image input dimension')
+    parser.add_argument('-txt_dim', type=int, default=300, help='size of text input dimension')
     parser.add_argument('-latent_dim', type=int, default=10, help='size of latent variable')
     parser.add_argument('-ours', action='store_true', default=False, help='use our target distribution')
     parser.add_argument('-use_prior', action='store_true', default=False, help='use prior knowledge')
@@ -70,8 +71,10 @@ def main():
 def train_multidec(args):
     print("Training multidec")
     device = torch.device(args.gpu)
+
     df_image_data = pd.read_csv(os.path.join(CONFIG.IMAGE_EMBEDDINGS,
-                                             args.prefix_csv + '_' + args.image_csv + '_' + args.target_dataset + ".csv"),
+                                             args.prefix_csv + '_' + args.image_csv + '_' +
+                                             args.target_dataset + ".csv"),
                                 index_col=0,
                                 encoding='utf-8-sig')
     df_text_data = pd.read_csv(os.path.join(CONFIG.TEXT_EMBEDDINGS,
@@ -106,17 +109,17 @@ def train_multidec(args):
                                                                                  df_test, CONFIG)
         print("\nLoading dataset completed")
 
-        image_encoder = MDEC_encoder(input_dim=args.input_dim, z_dim=args.latent_dim, n_clusters=n_clusters,
+        image_encoder = MDEC_encoder(input_dim=args.img_dim, z_dim=args.latent_dim, n_clusters=n_clusters,
                                      encodeLayer=[500, 500, 2000], activation="relu", dropout=0)
         image_encoder.load_model(os.path.join(CONFIG.CHECKPOINT_PATH, 'images',
                                               args.prefix_model + "_image_" + args.target_dataset + "_sdae_" + str(
                                                   args.latent_dim) + '_' + str(fold_idx)) + ".pt")
         # image_encoder.load_model(os.path.join(CONFIG.CHECKPOINT_PATH, "sampled_plus_labeled_scaled_image_sdae_" + str(fold_idx)) + ".pt")
-        text_encoder = MDEC_encoder(input_dim=args.input_dim, z_dim=args.latent_dim, n_clusters=n_clusters,
+        text_encoder = MDEC_encoder(input_dim=args.txt_dim, z_dim=args.latent_dim, n_clusters=n_clusters,
                                     encodeLayer=[500, 500, 2000], activation="relu", dropout=0)
         text_encoder.load_model(os.path.join(CONFIG.CHECKPOINT_PATH, 'text',
                                              args.prefix_model + "_use_" + args.target_dataset + '_' +
-                                             str(args.input_dim) + "_sdae_" + str(args.latent_dim) + '_' +
+                                             str(args.txt_dim) + "_sdae_" + str(args.latent_dim) + '_' +
                                              str(fold_idx)) + ".pt")
         # text_encoder.load_model(os.path.join(CONFIG.CHECKPOINT_PATH, "sampled_plus_labeled_scaled_text_sdae_" + str(fold_idx)) + ".pt")
         mdec = MultiDEC(device=device, image_encoder=image_encoder, text_encoder=text_encoder, ours=args.ours,
@@ -133,7 +136,7 @@ def train_multidec(args):
             mdec.fit_predict(full_dataset, train_dataset, val_dataset, args, CONFIG, lr=args.lr,
                              batch_size=args.batch_size, num_epochs=args.epochs,
                              save_path=os.path.join(CONFIG.CHECKPOINT_PATH, 'mdec', args.prefix_csv + "_mdec_" +
-                                                    str(args.input_dim) + '_' + str(args.latent_dim) + '_' +
+                                                    str(args.txt_dim) + '_' + str(args.latent_dim) + '_' +
                                                     str(fold_idx)) + '_' + str(args.kappa) + ".pt", tol=args.tol,
                              kappa=args.kappa)
 
