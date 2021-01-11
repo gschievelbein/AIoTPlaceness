@@ -79,6 +79,22 @@ class LabeledWeightedMultiCSVDataset(Dataset):
         return self.short_codes[idx], image_tensor, text_tensor, self.label_data[idx], self.weight_data[idx]
 
 
+def load_full_csv_data(df_image_data, df_text_data, CONFIG):
+    full_short_codes = []
+    full_image_data = []
+    full_text_data = []
+
+    pbar = tqdm(total=df_image_data.shape[0])
+    for index, row in df_image_data.iterrows():
+        full_short_codes.append(index)
+        full_image_data.append(np.array(row))
+        full_text_data.append(np.array(df_text_data.loc[index]))
+        pbar.update(1)
+    pbar.close()
+    full_dataset = MultiCSVDataset(full_short_codes, np.array(full_image_data), np.array(full_text_data), CONFIG)
+    return full_dataset
+
+
 def load_semi_supervised_csv_data(df_image_data, df_text_data, df_train, df_val, CONFIG):
     train_index = set(df_train.index)
     val_index = set(df_val.index)
@@ -120,6 +136,7 @@ def load_semi_supervised_csv_data(df_image_data, df_text_data, df_train, df_val,
     train_dataset = LabeledMultiCSVDataset(train_short_codes, np.array(train_image_data), np.array(train_text_data), train_label_data, CONFIG)
     val_dataset = LabeledMultiCSVDataset(val_short_codes, np.array(val_image_data), np.array(val_text_data), val_label_data, CONFIG)
     return full_dataset, train_dataset, val_dataset
+
 
 def load_transductive_semi_supervised_csv_data(df_image_data, df_text_data, df_full, df_train, CONFIG):
     train_index = set(df_train.index)

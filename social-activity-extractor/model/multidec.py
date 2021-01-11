@@ -211,7 +211,8 @@ class MultiDEC(nn.Module):
             p = p_image/2 + p_text/2
         return p, p_image, p_text
 
-    def fit_predict(self, full_dataset, train_dataset, test_dataset, args, CONFIG, lr=0.001, batch_size=256, num_epochs=10, update_time=1, save_path=None, tol=1e-3, kappa=0.1):
+    def fit_predict(self, full_dataset, train_dataset, test_dataset, args, CONFIG, lr=0.001, batch_size=256,
+                    num_epochs=10, update_time=1, save_path=None, tol=1e-3, kappa=0.1):
         full_num = len(full_dataset)
         full_num_batch = int(math.ceil(1.0 * len(full_dataset) / batch_size))
         train_num = len(train_dataset)
@@ -1500,11 +1501,11 @@ class MultiDEC(nn.Module):
         text_z = torch.cat(text_z, dim=0)
 
         q, r = self.soft_assignemt(image_z, text_z)
-        p = self.target_distribution(q, r).data
-        # y_pred = torch.argmax(p, dim=1).numpy()
+        p, _, _ = self.target_distribution(q, r)#.data
+        y_pred = torch.argmax(p, dim=1).numpy()
         y_confidence, y_pred = torch.max(p, dim=1)
-        y_confidence = y_confidence.numpy()
-        y_pred = y_pred.numpy()
-        p = p.numpy()
+        y_confidence = y_confidence.detach().numpy()
+        y_pred = y_pred.detach().numpy()
+        p = p.detach().numpy()
         count_percentage(y_pred)
         return short_codes, y_pred, y_confidence, p
